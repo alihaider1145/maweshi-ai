@@ -1,9 +1,22 @@
 function getLanguagePromptName(langCode) {
-  if (langCode.startsWith("pa")) return "Punjabi language (in Shahmukhi/Arabic script)";
-  if (langCode.startsWith("ps")) return "Pashto language (in Pashto script)";
-  if (langCode.startsWith("sd")) return "Sindhi language (in Sindhi Arabic script)";
-  if (langCode.startsWith("skr")) return "Saraiki language (in Arabic/Urdu script)";
-  return "simple Urdu language (in Urdu script)";
+  switch(langCode) {
+    case 'en-US':
+      return "English language";
+    case 'hno-PK':
+      return "Hindko language (written strictly in Shahmukhi / Arabic-based script)";
+    case 'bal-PK':
+      return "Balochi language (written strictly in Balochi Arabic script)";
+    case 'pa-PK':
+      return "Punjabi language (in Shahmukhi/Arabic script)";
+    case 'ps-PK':
+      return "Pashto language (in Pashto script)";
+    case 'sd-PK':
+      return "Sindhi language (in Sindhi Arabic script)";
+    case 'skr-PK':
+      return "Saraiki language (in Arabic/Urdu script)";
+    default:
+      return "simple Urdu language (in Urdu script)";
+  }
 }
 
 async function analyzeInjury() {
@@ -27,16 +40,18 @@ async function analyzeInjury() {
     const base64Data = await shrinkImage(file);
 
     const langName = getLanguagePromptName(selectedLang);
-    const prompt = `You are a simple, friendly veterinary advisor for local Pakistani farmers. 
-Analyze this image of a ${animalType}. 
 
-CRITICAL INSTRUCTION: Respond STRICTLY in ${langName}. DO NOT use any English letters or English words in brackets (transliterate technical terms into local script).
+    const prompt = `You are a livestock care specialist for farmers.
+    Target Language: ${langName}
 
-Format your response clearly using Markdown:
-1. **بیماری یا زخم کی ممکنہ وجہ**
-2. **فوری ابتدائی طبی امداد**
-3. **احتیاط اور صفائی**
-4. **ڈاکٹر سے مشورہ**`;
+    CRITICAL INSTRUCTIONS:
+    - If Target Language is English, respond purely in clear English.
+    - If Target Language is not English, respond STRICTLY in ${langName}. DO NOT output any English letters, Latin script, or bracketed English terms. Transliterate all veterinary or medical terms into the local script.
+    Format your response clearly using Markdown:
+    1. **بیماری یا زخم کی ممکنہ وجہ**
+    2. **فوری ابتدائی طبی امداد**
+    3. **احتیاط اور صفائی**
+    4. **ڈاکٹر سے مشورہ**`;
 
     const payload = {
       contents: [{
