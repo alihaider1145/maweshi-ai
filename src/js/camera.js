@@ -5,7 +5,7 @@ let camStream = null;
 async function openCamera() {
   if (matchMedia('(pointer: coarse)').matches) { document.getElementById('camImage').click(); return; }
   if (!window.isSecureContext || !navigator.mediaDevices) {
-    alert(t('errCam') + ' [page must use https:// or localhost]');
+    showError(t('errCam') + ' [page must use https:// or localhost]');
     return;
   }
   try {
@@ -13,7 +13,7 @@ async function openCamera() {
   } catch (e) {
     const why = e.name === 'NotAllowedError' ? 'blocked: click the lock icon in the address bar and allow the camera'
       : e.name === 'NotFoundError' ? 'no camera found' : e.name === 'NotReadableError' ? 'camera is in use by another app' : e.name;
-    alert(`${t('errCam')} [${why}]`);
+    showError(`${t('errCam')} [${why}]`);
     return;
   }
   document.getElementById('camVideo').srcObject = camStream;

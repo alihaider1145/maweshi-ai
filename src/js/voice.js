@@ -4,6 +4,7 @@ const recordings = {};            // slot -> { b64, url }
 let rec = null;                   // active recording { slot, mr, stream, chunks, timer, tick, sec }
 let micStarting = false;
 const MAX_SECONDS = 45;
+const MAX_SECONDS_FOLLOW = 20;   // a follow-up answer is short; this keeps the whole request under Netlify's ~6 MB limit
 
 function micError(slot, message) {
   const el = document.querySelector('#mic-' + slot + ' .mic-err');
@@ -72,7 +73,7 @@ async function toggleMic(slot) {
     updateMicUI(slot);
   };
   mr.start();
-  r.timer = setTimeout(() => mr.state === 'recording' && mr.stop(), MAX_SECONDS * 1000);
+  r.timer = setTimeout(() => mr.state === 'recording' && mr.stop(), (slot === 'follow' ? MAX_SECONDS_FOLLOW : MAX_SECONDS) * 1000);
   r.tick = setInterval(() => { r.sec++; updateMicUI(slot); }, 1000);
   updateMicUI(slot);
 }

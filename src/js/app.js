@@ -1,6 +1,33 @@
 let currentLang = 'ur-PK';
 let photoFile = null;
 
+// Inline message bar. We use this instead of alert(): a browser popup blocks the page, stops audio, cannot be
+// translated per language, and shows "localhost says" to the farmer. kind = 'error' | 'info'.
+let bannerTimer = null;
+function showBanner(msg, kind) {
+  const el = document.getElementById('banner');
+  if (!el) { console.warn(msg); return; }
+  el.textContent = msg;
+  el.className = 'banner banner-' + (kind || 'error');
+  el.hidden = false;
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(hideBanner, 9000);
+}
+const showError = (msg) => showBanner(msg, 'error');
+function hideBanner() { const el = document.getElementById('banner'); if (el) el.hidden = true; }
+
+// Last line of defence: any script error that slips through becomes the same inline message, never a popup.
+// The real reason goes to the console for the developers.
+window.addEventListener('error', (e) => {
+  if (/ResizeObserver/.test(e.message || '')) return;
+  console.error('Unhandled error:', e.error || e.message);
+  showError(t('errGeneric'));
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled promise rejection:', e.reason);
+  showError(t('errGeneric'));
+});
+
 async function shrinkImage(file, maxSide = 1024, quality = 0.7) {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
@@ -25,8 +52,10 @@ function previewImage(event) {
 
 function showScreen(id) {
   stopSpeech();
+  hideBanner();
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.id !== id);
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('on', b.dataset.s === id));
+  if (id === 'history' && typeof renderHistory === 'function') renderHistory();
   window.scrollTo(0, 0);
 }
 
@@ -65,9 +94,11 @@ function setLang(code) {
   document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
   document.querySelectorAll('#langGrid button').forEach(b => b.classList.toggle('on', b.dataset.c === code));
   renderVets();
+  if (typeof refreshAidLabels === 'function') refreshAidLabels();
+  if (typeof renderHistory === 'function') renderHistory();
   stopSpeech();
   document.querySelectorAll('[data-idle]').forEach(b => b.querySelector('.lbl').textContent = t(b.dataset.idle));
-  ['aid', 'breed'].forEach(updateMicUI);
+  ['aid', 'breed', 'follow'].forEach(updateMicUI);
   document.getElementById('picker').hidden = true;
   try { localStorage.setItem('lang', code); } catch (e) {}
 }
