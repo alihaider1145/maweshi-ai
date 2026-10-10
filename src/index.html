@@ -2,123 +2,94 @@
 <html lang="ur" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>مویشی AI - Maweshi AI</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="img/favicon.jpeg" type="image/jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-  <header>
-    <div class="brand">
-      <span>🌾</span>
-      <h1>مویشی AI</h1>
-    </div>
+  <header class="top">
+    <h1 class="sr">Maweshi AI</h1>
+    <img class="logo" src="img/logo.jpeg" alt="مویشی AI">
+    <button id="langBtn" class="lang-btn" onclick="openPicker()" aria-label="Language"><span aria-hidden="true">🌐</span> <span id="langName"></span></button>
   </header>
 
-  <div class="container">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('firstaid', event)">🩹 جانوروں کا علاج (First Aid)</button>
-      <button class="tab-btn" onclick="switchTab('breeding', event)">🧬 دوغلی نسل  رہنمائی (Breeding)</button>
-    </div>
-
-    <!-- FEATURE 1: Health & First Aid -->
-    <div id="firstaid" class="card active">
-      <h2>جانور کی بیماری یا زخم کی تصویر سے علاج</h2>
-      <p>اپنے بیمار جانور یا زخم کی تصویر اپلوڈ کریں اور زبان منتخب کر کے فوری رہنمائی حاصل کریں۔</p>
-
-      <div class="form-group">
-        <label for="animalType">جانور کی قسم منتخب کریں:</label>
-        <select id="animalType">
-          <option value="گائے (Cow)">گائے (Cow)</option>
-          <option value="بھینس (Buffalo)">بھینس (Buffalo)</option>
-          <option value="بکری (Goat)">بکری (Goat)</option>
-          <option value="بھیڑ (Sheep)">بھیڑ (Sheep)</option>
-        </select>
+  <main>
+    <section id="aid" class="screen">
+      <h2 data-i18n="aidTitle"></h2>
+      <p class="step" data-i18n="step1"></p>
+      <div class="animals" id="animals">
+        <button class="animal on" data-v="Cow"><b>🐄</b><span data-i18n="cow"></span></button>
+        <button class="animal" data-v="Buffalo"><b>🐃</b><span data-i18n="buffalo"></span></button>
+        <button class="animal" data-v="Goat"><b>🐐</b><span data-i18n="goat"></span></button>
+        <button class="animal" data-v="Sheep"><b>🐑</b><span data-i18n="sheep"></span></button>
       </div>
-
-      <div class="form-group">
-        <label for="injuryImage">زخم یا متاثرہ حصے کی تصویر اپلوڈ کریں:</label>
-        <input type="file" id="injuryImage" accept="image/*" onchange="previewImage(event)">
-        <img id="preview" class="img-preview" alt="پریویو">
+      <p class="step" data-i18n="step2"></p>
+      <div class="two">
+        <label class="photo-btn" for="camImage"><span aria-hidden="true">📷</span> <span data-i18n="camera"></span></label>
+        <label class="photo-btn alt" for="injuryImage"><span aria-hidden="true">🖼️</span> <span data-i18n="gallery"></span></label>
       </div>
-
-      <div class="form-group">
-        <label for="voiceLangFirstAid">🔊 جواب اور آواز کی زبان منتخب کریں:</label>
-        <select id="voiceLangFirstAid">
-          <option value="ur-PK">اردو (Urdu)</option>
-          <option value="en-US">English</option>
-          <option value="hno-PK">ہندکو (Hindko)</option>
-          <option value="bal-PK">بلوچی (Balochi)</option>
-          <option value="pa-PK">پنجابی (Punjabi)</option>
-          <option value="ps-PK">پشتو (Pashto)</option>
-          <option value="sd-PK">سنڌي (Sindhi)</option>
-          <option value="skr-PK">سرائیکی (Saraiki)</option>
-        </select>
-      </div>
-
-      <button class="btn-submit" onclick="analyzeInjury()">مشورہ حاصل کریں</button>
-
-      <div id="firstAidLoader" class="loader">تصویر کی جانچ کی جا رہی ہے...</div>
-
-      <div id="firstAidCard" class="output-card">
-        <div class="audio-controls">
-          <button class="btn-voice" onclick="speakText('firstAidOutput', 'voiceLangFirstAid')">▶ آواز سنیں (Listen Voice)</button>
-        </div>
+      <input type="file" id="camImage" accept="image/*" capture="environment" onchange="previewImage(event)" hidden>
+      <input type="file" id="injuryImage" accept="image/*" onchange="previewImage(event)" hidden>
+      <img id="preview" class="img-preview" alt="">
+      <p class="step" data-i18n="micHint"></p>
+      <div class="mic" id="mic-aid"><button class="mic-btn" onclick="toggleMic('aid')"><span class="ico">🎤</span> <span class="lbl"></span></button><div class="mic-done" hidden><audio controls></audio><button class="del" onclick="clearRec('aid')"></button></div></div>
+      <button class="primary" onclick="analyzeInjury()" data-i18n="getAdvice"></button>
+      <div id="firstAidLoader" class="loader" data-i18n="loading"></div>
+      <div id="firstAidCard" class="result">
+        <button class="listen" onclick="speakText('firstAidOutput', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
         <div id="firstAidOutput"></div>
+        <p class="warn" data-i18n="warn"></p>
       </div>
-    </div>
+    </section>
 
-    <!-- FEATURE 2: Cross Breeding Matchmaker -->
-    <div id="breeding" class="card">
-      <h2>بہترین دوغلی نسل  کا انتخاب (Breeding Guide)</h2>
-      <p>اپنے پاس موجود جانور، اپنا مقصد اور اپنی زبان منتخب کریں۔</p>
-
-      <div class="form-group">
-        <label for="inventory">آپ کے پاس کون سے جانور موجود ہیں؟</label>
-        <input type="text" id="inventory" placeholder="مثال: ساہیوال گائے، چولستانی گائے، فریزیئن سانڈ">
+    <section id="breed" class="screen" hidden>
+      <h2 data-i18n="breedTitle"></h2>
+      <p class="step" data-i18n="breedQ1"></p>
+      <input type="text" id="inventory" data-i18n-ph="breedPh">
+      <div class="mic" id="mic-breed"><button class="mic-btn" onclick="toggleMic('breed')"><span class="ico">🎤</span> <span class="lbl"></span></button><div class="mic-done" hidden><audio controls></audio><button class="del" onclick="clearRec('breed')"></button></div></div>
+      <p class="step" data-i18n="breedQ2"></p>
+      <div class="goals" id="goals">
+        <button class="goal on" data-v="Maximum Milk Yield" data-i18n="goalMilk"></button>
+        <button class="goal" data-v="Maximum Meat/Muscle" data-i18n="goalMeat"></button>
+        <button class="goal" data-v="Heat & Disease Resistance" data-i18n="goalHardy"></button>
       </div>
-
-      <div class="form-group">
-        <label for="targetGoal">آپ کا بنیادی مقصد کیا ہے؟</label>
-        <select id="targetGoal">
-          <option value="زیادہ سے زیادہ دودھ (Maximum Milk Yield)">زیادہ سے زیادہ دودھ (Maximum Milk)</option>
-          <option value="زیادہ گوشت اور وزن (Maximum Meat/Muscle)">زیادہ گوشت اور وزن (Maximum Meat)</option>
-          <option value="گرمی اور بیماری کا مقابلہ (Heat & Disease Resistance)">گرمی اور بیماری کا مقابلہ (Heat/Disease Resistance)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="voiceLangBreeding">🔊 جواب اور آواز کی زبان منتخب کریں:</label>
-        <select id="voiceLangBreeding">
-          <option value="ur-PK">اردو (Urdu)</option>
-          <option value="en-US">English</option>
-          <option value="hno-PK">ہندکو (Hindko)</option>
-          <option value="bal-PK">بلوچی (Balochi)</option>
-          <option value="pa-PK">پنجابی (Punjabi)</option>
-          <option value="ps-PK">پشتو (Pashto)</option>
-          <option value="sd-PK">سنڌي (Sindhi)</option>
-          <option value="skr-PK">سرائیکی (Saraiki)</option>
-        </select>
-      </div>
-
-      <button class="btn-submit" onclick="recommendBreeding()">بہترین جوڑا تلاش کریں</button>
-
-      <div id="breedingLoader" class="loader">تجویز تیار کی جا رہی ہے...</div>
-
-      <div id="breedingCard" class="output-card">
-        <div class="audio-controls">
-          <button class="btn-voice" onclick="speakText('breedingOutput', 'voiceLangBreeding')">▶ آواز سنیں (Listen Voice)</button>
-        </div>
+      <button class="primary" onclick="recommendBreeding()" data-i18n="getAdvice"></button>
+      <div id="breedingLoader" class="loader" data-i18n="loading"></div>
+      <div id="breedingCard" class="result">
+        <button class="listen" onclick="speakText('breedingOutput', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
         <div id="breedingOutput"></div>
+        <p class="warn" data-i18n="warn"></p>
       </div>
+    </section>
+
+    <section id="vet" class="screen" hidden>
+      <h2 data-i18n="vetTitle"></h2>
+      <p id="vetNote" class="note" hidden></p>
+      <div id="vetList"></div>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <button class="nav-btn on" data-s="aid"><svg viewBox="0 0 24 24"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg><span data-i18n="navAid"></span></button>
+    <button class="nav-btn" data-s="breed"><svg viewBox="0 0 24 24"><path d="M12 21V11M12 11C12 6 8 4 4 4c0 5 3 7 8 7zM12 14c0-4 3-6 8-6 0 5-3 6-8 6z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="navBreed"></span></button>
+    <button class="nav-btn" data-s="vet"><svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02z"/></svg><span data-i18n="navVet"></span></button>
+  </nav>
+
+  <div id="picker" class="picker" hidden>
+    <div class="picker-box">
+      <h2>زبان منتخب کریں<br><small>Choose your language</small></h2>
+      <div id="langGrid" class="lang-grid"></div>
     </div>
   </div>
 
+  <script src="js/i18n.js"></script>
+  <script src="js/vets.js"></script>
   <script src="js/app.js"></script>
   <script src="js/audio.js"></script>
+  <script src="js/voice.js"></script>
   <script src="js/api.js"></script>
 </body>
 </html>

@@ -1,68 +1,45 @@
-function speakText(containerId, langSelectId) {
+let speakToken = 0, speakBtn = null;
+
+function setSpeakUI(btn, playing) {
+  if (!btn) return;
+  btn.classList.toggle('playing', playing);
+  btn.querySelector('.ico').textContent = playing ? '⏹' : '🔊';
+  btn.querySelector('.lbl').textContent = t(playing ? 'stop' : 'listen');
+}
+
+function stopSpeech() {
+  speakToken++;
+  if (window.currentAudio) { window.currentAudio.pause(); window.currentAudio = null; }
+  setSpeakUI(speakBtn, false);
+  speakBtn = null;
+}
+
+function speakText(containerId, btn) {
+  if (btn && btn === speakBtn) { stopSpeech(); return; }   // second tap = stop
+  stopSpeech();
   const container = document.getElementById(containerId);
-  const langSelect = document.getElementById(langSelectId);
+  if (!container || !container.innerText.trim()) return;
+  const cleanText = container.innerText.replace(/[\*\#\-\_]/g, '').replace(/[0-9]\./g, '').trim();
 
-  if (!container || !container.innerText.trim()) {
-    alert("پہلے جواب حاصل کریں۔ / No text available.");
-    return;
-  }
+  // Google TTS has no Balochi, Hindko, Saraiki or Shahmukhi-Punjabi voice, so those use the Urdu voice (MVP).
+  const base = currentLang.split('-')[0];
+  const langCode = ['en', 'sd', 'ps'].includes(base) ? base : 'ur';
 
-  const rawText = container.innerText;
-  const selectedLang = langSelect ? langSelect.value : 'ur-PK';
-
-  // Clean Markdown formatting symbols (*, #, -, numbers)
-  const cleanText = rawText
-    .replace(/[\*\#\-\_]/g, '')
-    .replace(/[0-9]\./g, '')
-    .trim();
-
-  // Route language codes
-  let langCode = 'ur'; // Covers Urdu, Hindko, Balochi, Saraiki, Punjabi
-  if (selectedLang.startsWith('en')) {
-    langCode = 'en';
-  } else if (selectedLang.startsWith('sd')) {
-    langCode = 'sd';
-  } else if (selectedLang.startsWith('ps')) {
-    langCode = 'ps';
-  }
-
-  // Stop any active playing audio
-  if (window.currentAudio) {
-    window.currentAudio.pause();
-    window.currentAudio = null;
-  }
-
-  // Split text into chunks (max 180 chars)
-  const textChunks = cleanText.match(/.{1,180}(\s|$)/g) || [cleanText];
-  let currentChunkIndex = 0;
-
-  function playNextChunk() {
-    if (currentChunkIndex >= textChunks.length) return;
-
-    const chunk = textChunks[currentChunkIndex].trim();
-    if (!chunk) {
-      currentChunkIndex++;
-      playNextChunk();
-      return;
-    }
-
-    // Direct request to Netlify proxy function
-    const audioUrl = `/api/tts?q=${encodeURIComponent(chunk)}&tl=${langCode}`;
-
-    const audio = new Audio(audioUrl);
+  const myToken = speakToken;
+  speakBtn = btn;
+  setSpeakUI(btn, true);
+  const chunks = cleanText.match(/.{1,180}(\s|$)/g) || [cleanText];
+  let i = 0;
+  function next() {
+    if (myToken !== speakToken) return;
+    if (i >= chunks.length) { stopSpeech(); return; }
+    const chunk = chunks[i++].trim();
+    if (!chunk) return next();
+    const audio = new Audio(`/api/tts?q=${encodeURIComponent(chunk)}&tl=${langCode}`);
     window.currentAudio = audio;
-
-    audio.onended = () => {
-      currentChunkIndex++;
-      playNextChunk();
-    };
-
-    audio.onerror = (e) => {
-      console.error("Audio proxy playback error:", e);
-    };
-
-    audio.play().catch(err => console.warn("Playback prevented:", err));
+    audio.onended = next;
+    audio.onerror = () => { if (myToken === speakToken) stopSpeech(); };
+    audio.play().catch(() => { if (myToken === speakToken) stopSpeech(); });
   }
-
-  playNextChunk();
+  next();
 }

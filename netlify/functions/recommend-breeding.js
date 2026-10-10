@@ -7,7 +7,6 @@ exports.handler = async (event) => {
   if (!apiKey) {
     return { statusCode: 500, body: JSON.stringify({ error: 'GEMINI_API_KEY is not set on Netlify server.' }) };
   }
-  console.log('KEY CHECK → length:', apiKey.length, '| starts:', apiKey.slice(0, 3), '| ends:', apiKey.slice(-4));
 
   try {
     const payload = JSON.parse(event.body);
