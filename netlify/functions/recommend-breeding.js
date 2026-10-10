@@ -1,42 +1,28 @@
+const { generate } = require('../lib/gemini');
+const { LANGS, GOALS, breedingPrompt } = require('../lib/prompts');
+
+const json = (statusCode, obj) => ({ statusCode, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
+const B64 = /^[A-Za-z0-9+/]+={0,2}$/;
+
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+  if (event.httpMethod !== 'POST') return json(405, { error: 'Method Not Allowed' });
+  let b;
+  try { b = JSON.parse(event.body || '{}'); } catch { return json(400, { error: 'Bad request' }); }
+
+  const { goal, lang, audio } = b;
+  const inventory = typeof b.inventory === 'string' ? b.inventory.replace(/[\r\n"]+/g, ' ').trim().slice(0, 300) : '';
+  const audioOk = audio !== undefined && typeof audio === 'string' && audio.length > 0 && audio.length <= 2_600_000 && B64.test(audio);
+  if (!GOALS.includes(goal) || !LANGS[lang] || (audio !== undefined && !audioOk) || (!inventory && !audioOk)) {
+    return json(400, { error: 'Bad request' });
   }
 
- const apiKey = process.env.MAWESHI_GEMINI_KEY;
-  if (!apiKey) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'GEMINI_API_KEY is not set on Netlify server.' }) };
-  }
+  const parts = [{ text: breedingPrompt({ inventory, goal, lang, hasAudio: audioOk }) }];
+  if (audioOk) parts.push({ inline_data: { mime_type: 'audio/wav', data: audio } });
 
   try {
-    const payload = JSON.parse(event.body);
-    const models = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
-    let lastError = null;
-
-    for (const model of models) {
-      const t0 = Date.now();
-      try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(12000)
-        });
-        const data = await response.json();
-        console.log(model, '→', response.status, 'in', Date.now() - t0, 'ms');
-        if (response.ok) {
-          return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) };
-        }
-        lastError = data.error?.message || `HTTP ${response.status}`;
-      } catch (e) {
-        console.log(model, 'failed after', Date.now() - t0, 'ms:', e.message);
-        lastError = `${model}: ${e.message}`;
-      }
-    }
-
-    return { statusCode: 500, body: JSON.stringify({ error: lastError }) };
-  } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    return json(200, { text: await generate(parts) });
+  } catch (e) {
+    console.error('recommend-breeding failed:', e.message);
+    return json(502, { error: 'Service unavailable' });
   }
 };

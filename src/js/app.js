@@ -11,10 +11,16 @@ async function shrinkImage(file, maxSide = 1024, quality = 0.7) {
   return canvas.toDataURL('image/jpeg', quality).split(',')[1];
 }
 
-function previewImage(event) {
+function setPhoto(file) {
+  photoFile = file;
   const preview = document.getElementById('preview');
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+}
+
+function previewImage(event) {
   const file = event.target.files[0];
-  if (file) { photoFile = file; preview.src = URL.createObjectURL(file); preview.style.display = 'block'; }
+  if (file) setPhoto(file);
 }
 
 function showScreen(id) {
@@ -60,7 +66,7 @@ function setLang(code) {
   document.querySelectorAll('#langGrid button').forEach(b => b.classList.toggle('on', b.dataset.c === code));
   renderVets();
   stopSpeech();
-  document.querySelectorAll('.listen .lbl').forEach(el => el.textContent = t('listen'));
+  document.querySelectorAll('[data-idle]').forEach(b => b.querySelector('.lbl').textContent = t(b.dataset.idle));
   ['aid', 'breed'].forEach(updateMicUI);
   document.getElementById('picker').hidden = true;
   try { localStorage.setItem('lang', code); } catch (e) {}

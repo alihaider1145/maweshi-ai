@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>مویشی AI - Maweshi AI</title>
-  <link rel="icon" href="img/favicon.jpeg" type="image/jpeg">
+  <link rel="icon" href="img/favicon.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
@@ -12,13 +12,14 @@
 <body>
   <header class="top">
     <h1 class="sr">Maweshi AI</h1>
-    <img class="logo" src="img/logo.jpeg" alt="مویشی AI">
+    <img class="logo" src="img/logo.png" alt="مویشی AI">
     <button id="langBtn" class="lang-btn" onclick="openPicker()" aria-label="Language"><span aria-hidden="true">🌐</span> <span id="langName"></span></button>
   </header>
 
   <main>
     <section id="aid" class="screen">
       <h2 data-i18n="aidTitle"></h2>
+      <button class="help" data-idle="helpBtn" onclick="speakHelp('helpAid', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
       <p class="step" data-i18n="step1"></p>
       <div class="animals" id="animals">
         <button class="animal on" data-v="Cow"><b>🐄</b><span data-i18n="cow"></span></button>
@@ -28,18 +29,18 @@
       </div>
       <p class="step" data-i18n="step2"></p>
       <div class="two">
-        <label class="photo-btn" for="camImage"><span aria-hidden="true">📷</span> <span data-i18n="camera"></span></label>
+        <button class="photo-btn" onclick="openCamera()"><span aria-hidden="true">📷</span> <span data-i18n="camera"></span></button>
         <label class="photo-btn alt" for="injuryImage"><span aria-hidden="true">🖼️</span> <span data-i18n="gallery"></span></label>
       </div>
       <input type="file" id="camImage" accept="image/*" capture="environment" onchange="previewImage(event)" hidden>
       <input type="file" id="injuryImage" accept="image/*" onchange="previewImage(event)" hidden>
       <img id="preview" class="img-preview" alt="">
       <p class="step" data-i18n="micHint"></p>
-      <div class="mic" id="mic-aid"><button class="mic-btn" onclick="toggleMic('aid')"><span class="ico">🎤</span> <span class="lbl"></span></button><div class="mic-done" hidden><audio controls></audio><button class="del" onclick="clearRec('aid')"></button></div></div>
+      <div class="mic" id="mic-aid"><button class="mic-btn" onclick="toggleMic('aid')"><span class="ico">🎤</span> <span class="lbl"></span></button><div class="mic-done" hidden><audio controls></audio><button class="del" onclick="clearRec('aid')"></button></div><p class="mic-err" hidden></p></div>
       <button class="primary" onclick="analyzeInjury()" data-i18n="getAdvice"></button>
       <div id="firstAidLoader" class="loader" data-i18n="loading"></div>
       <div id="firstAidCard" class="result">
-        <button class="listen" onclick="speakText('firstAidOutput', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
+        <button class="listen" data-idle="listen" onclick="speakText('firstAidOutput', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
         <div id="firstAidOutput"></div>
         <p class="warn" data-i18n="warn"></p>
       </div>
@@ -47,9 +48,10 @@
 
     <section id="breed" class="screen" hidden>
       <h2 data-i18n="breedTitle"></h2>
+      <button class="help" data-idle="helpBtn" onclick="speakHelp('helpBreed', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
       <p class="step" data-i18n="breedQ1"></p>
       <input type="text" id="inventory" data-i18n-ph="breedPh">
-      <div class="mic" id="mic-breed"><button class="mic-btn" onclick="toggleMic('breed')"><span class="ico">🎤</span> <span class="lbl"></span></button><div class="mic-done" hidden><audio controls></audio><button class="del" onclick="clearRec('breed')"></button></div></div>
+      <div class="mic" id="mic-breed"><button class="mic-btn" onclick="toggleMic('breed')"><span class="ico">🎤</span> <span class="lbl"></span></button><div class="mic-done" hidden><audio controls></audio><button class="del" onclick="clearRec('breed')"></button></div><p class="mic-err" hidden></p></div>
       <p class="step" data-i18n="breedQ2"></p>
       <div class="goals" id="goals">
         <button class="goal on" data-v="Maximum Milk Yield" data-i18n="goalMilk"></button>
@@ -59,7 +61,7 @@
       <button class="primary" onclick="recommendBreeding()" data-i18n="getAdvice"></button>
       <div id="breedingLoader" class="loader" data-i18n="loading"></div>
       <div id="breedingCard" class="result">
-        <button class="listen" onclick="speakText('breedingOutput', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
+        <button class="listen" data-idle="listen" onclick="speakText('breedingOutput', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
         <div id="breedingOutput"></div>
         <p class="warn" data-i18n="warn"></p>
       </div>
@@ -67,6 +69,7 @@
 
     <section id="vet" class="screen" hidden>
       <h2 data-i18n="vetTitle"></h2>
+      <button class="help" data-idle="helpBtn" onclick="speakHelp('helpVet', this)"><span class="ico">🔊</span> <span class="lbl"></span></button>
       <p id="vetNote" class="note" hidden></p>
       <div id="vetList"></div>
     </section>
@@ -77,6 +80,16 @@
     <button class="nav-btn" data-s="breed"><svg viewBox="0 0 24 24"><path d="M12 21V11M12 11C12 6 8 4 4 4c0 5 3 7 8 7zM12 14c0-4 3-6 8-6 0 5-3 6-8 6z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="navBreed"></span></button>
     <button class="nav-btn" data-s="vet"><svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02z"/></svg><span data-i18n="navVet"></span></button>
   </nav>
+
+  <div id="camModal" class="picker" hidden>
+    <div class="picker-box">
+      <video id="camVideo" class="cam-video" autoplay playsinline muted></video>
+      <div class="two" style="margin-top:12px">
+        <button class="primary" style="margin-top:0" onclick="snapPhoto()"><span aria-hidden="true">📸</span> <span data-i18n="snap"></span></button>
+        <button class="del" style="min-height:60px" onclick="closeCamera()" data-i18n="camClose"></button>
+      </div>
+    </div>
+  </div>
 
   <div id="picker" class="picker" hidden>
     <div class="picker-box">
@@ -90,6 +103,7 @@
   <script src="js/app.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/voice.js"></script>
+  <script src="js/camera.js"></script>
   <script src="js/api.js"></script>
 </body>
 </html>

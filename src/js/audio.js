@@ -4,7 +4,7 @@ function setSpeakUI(btn, playing) {
   if (!btn) return;
   btn.classList.toggle('playing', playing);
   btn.querySelector('.ico').textContent = playing ? '⏹' : '🔊';
-  btn.querySelector('.lbl').textContent = t(playing ? 'stop' : 'listen');
+  btn.querySelector('.lbl').textContent = t(playing ? 'stop' : (btn.dataset.idle || 'listen'));
 }
 
 function stopSpeech() {
@@ -15,11 +15,17 @@ function stopSpeech() {
 }
 
 function speakText(containerId, btn) {
+  const container = document.getElementById(containerId);
+  speak(container ? container.innerText : '', btn);
+}
+
+function speakHelp(key, btn) { speak(t(key), btn); }
+
+function speak(rawText, btn) {
   if (btn && btn === speakBtn) { stopSpeech(); return; }   // second tap = stop
   stopSpeech();
-  const container = document.getElementById(containerId);
-  if (!container || !container.innerText.trim()) return;
-  const cleanText = container.innerText.replace(/[\*\#\-\_]/g, '').replace(/[0-9]\./g, '').trim();
+  const cleanText = (rawText || '').replace(/[\*\#\-\_]/g, '').replace(/[0-9]\./g, '').trim();
+  if (!cleanText) return;
 
   // Google TTS has no Balochi, Hindko, Saraiki or Shahmukhi-Punjabi voice, so those use the Urdu voice (MVP).
   const base = currentLang.split('-')[0];
