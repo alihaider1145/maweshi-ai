@@ -1,0 +1,10 @@
+{
+  "name": "maweshi-ai",
+  "version": "1.0.0",
+  "description": "AI-powered livestock care and cross-breeding assistant for farmers",
+  "main": "src/index.html",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {}
+}

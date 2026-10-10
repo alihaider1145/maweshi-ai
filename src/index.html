@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مواشی AI - Maweshi AI</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span>🌾</span>
+      <h1>مواشی AI</h1>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('firstaid', event)">🩹 جانوروں کا علاج (First Aid)</button>
+      <button class="tab-btn" onclick="switchTab('breeding', event)">🧬 نسل کشی رہنمائی (Breeding)</button>
+    </div>
+
+    <!-- FEATURE 1: Health & First Aid -->
+    <div id="firstaid" class="card active">
+      <h2>جانور کی بیماری یا زخم کی تصویر سے علاج</h2>
+      <p>اپنے بیمار جانور یا زخم کی تصویر اپلوڈ کریں اور زبان منتخب کر کے فوری رہنمائی حاصل کریں۔</p>
+
+      <div class="form-group">
+        <label for="animalType">جانور کی قسم منتخب کریں:</label>
+        <select id="animalType">
+          <option value="گائے (Cow)">گائے (Cow)</option>
+          <option value="بھینس (Buffalo)">بھینس (Buffalo)</option>
+          <option value="بکری (Goat)">بکری (Goat)</option>
+          <option value="بھیڑ (Sheep)">بھیڑ (Sheep)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="injuryImage">زخم یا متاثرہ حصے کی تصویر اپلوڈ کریں:</label>
+        <input type="file" id="injuryImage" accept="image/*" onchange="previewImage(event)">
+        <img id="preview" class="img-preview" alt="پریویو">
+      </div>
+
+      <div class="form-group">
+        <label for="voiceLangFirstAid">🔊 جواب اور آواز کی زبان منتخب کریں:</label>
+        <select id="voiceLangFirstAid">
+          <option value="ur-PK">اردو (Urdu)</option>
+          <option value="pa-PK">پنجابی (Punjabi)</option>
+          <option value="ps-PK">پشتو (Pashto)</option>
+          <option value="sd-PK">سنڌي (Sindhi)</option>
+          <option value="skr-PK">سرائیکی (Saraiki)</option>
+        </select>
+      </div>
+
+      <button class="btn-submit" onclick="analyzeInjury()">مشورہ حاصل کریں</button>
+
+      <div id="firstAidLoader" class="loader">تصویر کی جانچ کی جا رہی ہے...</div>
+
+      <div id="firstAidCard" class="output-card">
+        <div class="audio-controls">
+          <button class="btn-voice" onclick="speakText('firstAidOutput', 'voiceLangFirstAid')">▶ آواز سنیں (Listen Voice)</button>
+        </div>
+        <div id="firstAidOutput"></div>
+      </div>
+    </div>
+
+    <!-- FEATURE 2: Cross Breeding Matchmaker -->
+    <div id="breeding" class="card">
+      <h2>بہترین نسل کشی کا انتخاب (Breeding Guide)</h2>
+      <p>اپنے پاس موجود جانور، اپنا مقصد اور اپنی زبان منتخب کریں۔</p>
+
+      <div class="form-group">
+        <label for="inventory">آپ کے پاس کون سے جانور موجود ہیں؟</label>
+        <input type="text" id="inventory" placeholder="مثال: ساہیوال گائے، چولستانی گائے، فریزیئن سانڈ">
+      </div>
+
+      <div class="form-group">
+        <label for="targetGoal">آپ کا بنیادی مقصد کیا ہے؟</label>
+        <select id="targetGoal">
+          <option value="زیادہ سے زیادہ دودھ (Maximum Milk Yield)">زیادہ سے زیادہ دودھ (Maximum Milk)</option>
+          <option value="زیادہ گوشت اور وزن (Maximum Meat/Muscle)">زیادہ گوشت اور وزن (Maximum Meat)</option>
+          <option value="گرمی اور بیماری کا مقابلہ (Heat & Disease Resistance)">گرمی اور بیماری کا مقابلہ (Heat/Disease Resistance)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="voiceLangBreeding">🔊 جواب اور آواز کی زبان منتخب کریں:</label>
+        <select id="voiceLangBreeding">
+          <option value="ur-PK">اردو (Urdu)</option>
+          <option value="pa-PK">پنجابی (Punjabi)</option>
+          <option value="ps-PK">پشتو (Pashto)</option>
+          <option value="sd-PK">سنڌي (Sindhi)</option>
+          <option value="skr-PK">سرائیکی (Saraiki)</option>
+        </select>
+      </div>
+
+      <button class="btn-submit" onclick="recommendBreeding()">بہترین جوڑا تلاش کریں</button>
+
+      <div id="breedingLoader" class="loader">تجویز تیار کی جا رہی ہے...</div>
+
+      <div id="breedingCard" class="output-card">
+        <div class="audio-controls">
+          <button class="btn-voice" onclick="speakText('breedingOutput', 'voiceLangBreeding')">▶ آواز سنیں (Listen Voice)</button>
+        </div>
+        <div id="breedingOutput"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/api.js"></script>
+</body>
+</html>
