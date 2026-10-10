@@ -24,11 +24,7 @@ async function analyzeInjury() {
 
   try {
     const file = fileInput.files[0];
-    const base64Data = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result.split(',')[1]);
-      reader.readAsDataURL(file);
-    });
+    const base64Data = await shrinkImage(file);
 
     const langName = getLanguagePromptName(selectedLang);
     const prompt = `You are a simple, friendly veterinary advisor for local Pakistani farmers. 
@@ -46,7 +42,7 @@ Format your response clearly using Markdown:
       contents: [{
         parts: [
           { text: prompt },
-          { inline_data: { mime_type: file.type, data: base64Data } }
+          { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
         ]
       }]
     };
@@ -57,7 +53,9 @@ Format your response clearly using Markdown:
       body: JSON.stringify(payload)
     });
 
-    const result = await response.json();
+    const raw = await response.text();
+    let result;
+    try { result = JSON.parse(raw); } catch { throw new Error(raw.slice(0, 150) || 'Server error'); }
     if (response.ok && result.candidates) {
       const text = result.candidates[0].content.parts[0].text;
       outputDiv.innerHTML = marked.parse(text);
@@ -111,7 +109,9 @@ Format using Markdown:
       body: JSON.stringify(payload)
     });
 
-    const result = await response.json();
+    const raw = await response.text();
+    let result;
+    try { result = JSON.parse(raw); } catch { throw new Error(raw.slice(0, 150) || 'Server error'); }
     if (response.ok && result.candidates) {
       const text = result.candidates[0].content.parts[0].text;
       outputDiv.innerHTML = marked.parse(text);
